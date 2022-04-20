@@ -1,0 +1,1 @@
+SELECT * FROM masterline where signid=142
