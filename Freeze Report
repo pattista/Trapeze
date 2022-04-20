@@ -1,0 +1,2 @@
+SELECT freeze,* 
+FROM trips where signid = [SignUp, FxSelectSignUpPeriod]
