@@ -1,0 +1,3 @@
+SELECT MasterLine.LineId, LineStop.LineDirId, MasterLine.LineAbbr, MasterLine.LineName, Line.DirectionName, LineStop.NodeId, LineStop.StopId, LineStop.Sequence, LineStop.StopFlag, LineStop.StopType, LineStop.StopNum, LineStop.SignId, Stops.StopName, Stops.Lat, Stops.Lon
+FROM mmsdata1.dbo.Line Line, mmsdata1.dbo.LineStop LineStop, mmsdata1.dbo.MasterLine MasterLine, mmsdata1.dbo.Stops Stops
+WHERE Line.LineDirId = LineStop.LineDirId AND MasterLine.LineId = Line.LineId AND Stops.StopId = LineStop.StopId AND ((LineStop.SignId=128) AND (LineStop.StopType='N') AND (MasterLine.LineAbbr Not In ('000','072','101')))
