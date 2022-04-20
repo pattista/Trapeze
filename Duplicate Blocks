@@ -1,0 +1,35 @@
+Duplicate Block Update
+
+I’ve been working with Development this morning and was given a new script. I didn’t realize I could query through the linked server, so we did this and found the following duplicate block. If you can take care of this duplicate block, I can try a fresh import to make sure we have everything. 
+
+SignId	ServiceGroupId	LineGroupId	BlockId	BlockNum	BlockName	BusTypeId	BlockGroupId	NeedsFueling	DivisionId	UserLong1	UserLong2
+149	1	13414	394007	4633	4633	1	0	0	12	NULL	NULL
+149	1	13414	394675	4634	4633	0	0	0	12	NULL	NULL
+
+
+So you have record of it, the following is the updated script (through a linked server):
+
+select blockname,serviceabbr, count(*) from (
+select distinct ltrim(rtrim(fb.BlockName)) as blockname, fb.BlockNum, ltrim(rtrim(ServiceGroupAbbr)) as serviceabbr,
+ltrim(rtrim(ServiceGroupName)) as servicegroupname, BlockId, ltrim(rtrim(LineType)) as linetype, msg.AgencyId
+from  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].FXBLOCKS fb
+inner join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].MASTERLINEGROUP mlg
+                on fb.LineGroupId = mlg.LineGroupId
+inner join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].MASTERSERVICEGROUP msg
+                on fb.ServiceGroupId = msg.ServiceGroupId
+left join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].LINEGROUP lg
+                on mlg.LineGroupId = lg.LineGroupId
+left join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].MASTERLINE ml
+                on lg.LineId = ml.LineId
+where fb.SignId in (149)
+                and not exists (select 1 from  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].MASTERLINEGROUP mlg
+                                                                                inner join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].LINEGROUP lg on mlg.LineGroupId = lg.LineGroupId
+                                                                                inner join  [MTAGBFXSQLPROD1].[mmsdata1].[dbo].MASTERLINE ml on lg.LineId = ml.LineId
+                                                                                where fb.LineGroupId = mlg.LineGroupId and 1=0)
+) a
+group by blockname,serviceabbr
+having count(*) > 1
+
+
+
+Aron Rodemeyer
